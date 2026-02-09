@@ -1,0 +1,6 @@
+@fitness_dash_api_HostAddress = http://localhost:5271
+
+GET {{fitness_dash_api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
