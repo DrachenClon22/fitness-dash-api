@@ -1,4 +1,5 @@
-﻿using fitness_dash_api.Auth;
+﻿using AutoMapper;
+using fitness_dash_api.Auth;
 using fitness_dash_api.Context;
 using fitness_dash_api.Objects;
 using Microsoft.AspNetCore.Authorization;
@@ -20,23 +21,29 @@ namespace fitness_dash_api.Controllers
     {
 
         private readonly AppDbContext _context;
+        private readonly IMapper _mapper;
 
-        public AuthController(AppDbContext context)
+        public AuthController(AppDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         [Authorize]
         [HttpGet("me")]
-        public IActionResult GetMe()
+        public async Task<IActionResult> GetMe()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
-            var username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null || username == null)
+            if (int.TryParse(userId, out int id))
             {
-                return NotFound();
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+                if (user != null)
+                {
+                    var response = _mapper.Map<User, UserResponse>(user);
+                    return Ok(response);
+                }
             }
-            return Ok(new { Id = userId, Username = username });
+            return NotFound();
         }
 
         [Authorize]
