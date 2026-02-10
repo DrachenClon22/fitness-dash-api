@@ -61,7 +61,7 @@ namespace fitness_dash_api.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == request.Username);
+            var user = _context.Users.FirstOrDefault(u => u.Name == request.Name);
             if (user != null && CheckPassword(request.Password, user.PasswordHash))
             {
                 return Ok(GenerateJwtToken(user));
@@ -72,13 +72,13 @@ namespace fitness_dash_api.Controllers
         [HttpPost("register")]
         public IActionResult Register([FromBody] RegisterRequest request)
         {
-            if (_context.Users.Any(x=>x.Username==request.Username))
+            if (_context.Users.Any(x=>x.Name==request.Name))
             {
                 return BadRequest("User already exists");
             }
             var user = new User
             {
-                Username = request.Username,
+                Name = request.Name,
                 PasswordHash = HashPassword(request.Password),
                 Email = request.Email,
             };
@@ -110,7 +110,7 @@ namespace fitness_dash_api.Controllers
             var claims = new List<Claim>
             {
                 new Claim("id", user.Id.ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.Name),
                 new Claim("token_stamp", user.SecurityStamp)
             };
             var token = new JwtSecurityToken(
